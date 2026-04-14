@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, PieChart, Pie, Cell } from "recharts";
-import { Plus, Milk, Pencil, Trash2, Beef, HeartPulse, AlertTriangle } from "lucide-react";
+import { Plus, Milk, Pencil, Trash2, Beef, HeartPulse, AlertTriangle, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ export default function Dashboard() {
   const [milkDialogOpen, setMilkDialogOpen] = useState(false);
   const [editCow, setEditCow] = useState<any>(null);
   const [timePeriod, setTimePeriod] = useState<'day' | 'week' | 'month'>('day');
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
   const todayMilk = milkRecords.filter((r) => r.date === today).reduce((s, r) => s + r.amount_liters, 0);
@@ -170,6 +171,80 @@ export default function Dashboard() {
                 </Select>
                 <Button onClick={handleAddMilk} className="w-full">Log</Button>
               </div>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
+            <DialogTrigger asChild><Button variant="outline"><Lightbulb className="h-4 w-4 mr-1" />AI Assistance</Button></DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader><DialogTitle>🐄 Dairy Farming AI Assistant</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h4 className="font-semibold text-blue-900 mb-2">📊 Production Targets</h4>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• <strong>Healthy Cow Daily:</strong> 15-25 liters per day</li>
+                    <li>• <strong>Monthly Target:</strong> 450-750 liters per cow</li>
+                    <li>• <strong>Annual Production:</strong> 5,400-9,000 liters per cow</li>
+                    <li>• <strong>Lactation Cycle:</strong> 305 days per year</li>
+                  </ul>
+                </div>
+
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <h4 className="font-semibold text-green-900 mb-2">🍃 Feeding & Nutrition</h4>
+                  <ul className="text-sm text-green-800 space-y-1">
+                    <li>• <strong>Daily Feed:</strong> 3-5% of body weight (50-75 kg for 1,500 lb cow)</li>
+                    <li>• <strong>Water Intake:</strong> 20-30 liters per day (increase with milking)</li>
+                    <li>• <strong>Grass/Hay:</strong> High-quality pasture or hay during dry seasons</li>
+                    <li>• <strong>Concentrate:</strong> 1-2 kg for every 2-3 liters of milk produced</li>
+                    <li>• <strong>Minerals:</strong> Calcium, phosphorus, magnesium daily</li>
+                  </ul>
+                </div>
+
+                <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                  <h4 className="font-semibold text-red-900 mb-2">❤️ Health & Disease Prevention</h4>
+                  <ul className="text-sm text-red-800 space-y-1">
+                    <li>• <strong>Mastitis Prevention:</strong> Clean udders before & after milking</li>
+                    <li>• <strong>Vaccination:</strong> Brucellosis, FMD, blackleg (annually)</li>
+                    <li>• <strong>Parasite Control:</strong> Deworm every 4-6 weeks</li>
+                    <li>• <strong>Health Check:</strong> Monitor temperature, appetite, milk quality daily</li>
+                    <li>• <strong>Hygiene:</strong> Clean barn/milking equipment 2x daily</li>
+                  </ul>
+                </div>
+
+                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                  <h4 className="font-semibold text-yellow-900 mb-2">🌡️ Environmental Management</h4>
+                  <ul className="text-sm text-yellow-800 space-y-1">
+                    <li>• <strong>Temperature:</strong> Ideal 10-18°C (50-65°F)</li>
+                    <li>• <strong>Ventilation:</strong> 6-10 air changes per hour</li>
+                    <li>• <strong>Lighting:</strong> 14-16 hours per day increases milk yield</li>
+                    <li>• <strong>Resting:</strong> 8-10 hours of uninterrupted sleep daily</li>
+                    <li>• <strong>Milking Schedule:</strong> Consistent times (e.g., 5 AM & 5 PM)</li>
+                  </ul>
+                </div>
+
+                <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                  <h4 className="font-semibold text-purple-900 mb-2">🔄 Best Practices</h4>
+                  <ul className="text-sm text-purple-800 space-y-1">
+                    <li>• <strong>Breeding:</strong> Calve at 24-28 months for optimal productivity</li>
+                    <li>• <strong>Dry Period:</strong> 60 days rest after lactation improves next cycle</li>
+                    <li>• <strong>Record Keeping:</strong> Track milk, health, breeding, expenses</li>
+                    <li>• <strong>Genetic Selection:</strong> Keep high-producing, healthy cows</li>
+                    <li>• <strong>Consultation:</strong> Work with veterinarian quarterly</li>
+                  </ul>
+                </div>
+
+                <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                  <h4 className="font-semibold text-indigo-900 mb-2">💡 When Production Drops</h4>
+                  <p className="text-sm text-indigo-800 mb-2">Check these in order:</p>
+                  <ul className="text-sm text-indigo-800 space-y-1">
+                    <li>1. Stress or Environmental Changes (heat, disturbance)</li>
+                    <li>2. Nutrition Deficiency (poor feed quality, low water)</li>
+                    <li>3. Illness (fever, lameness, mastitis, pregnancy)</li>
+                    <li>4. Milking Issues (improper technique, equipment problems)</li>
+                    <li>5. Age/Lactation Stage (natural decline near end of cycle)</li>
+                  </ul>
+                </div>
+              </div>
+              <Button onClick={() => setAiDialogOpen(false)} className="w-full mt-4">Close</Button>
             </DialogContent>
           </Dialog>
           <Dialog open={cowDialogOpen} onOpenChange={(o) => { setCowDialogOpen(o); if (!o) setEditCow(null); }}>
