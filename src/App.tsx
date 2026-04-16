@@ -22,61 +22,16 @@ import IncomePage from "@/pages/IncomePage";
 import WorkersPage from "@/pages/WorkersPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import NotFound from "@/pages/NotFound";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { CowProvider } from "./contexts/CowContext";
 import { RecordProvider } from "./contexts/RecordContext";
 
 const queryClient = new QueryClient();
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
-  // const [session, setSession] = useState<Session | null>(null);
-  // const [loading, setLoading] = useState(true);
+  const { isAuthenticated } = useAuth();
 
-  // useEffect(() => {
-  // const getInitialSession = async () => {
-  //   try {
-  //     const { data: { session }, error } = await supabase.auth.getSession();
-  //     if (error) {
-  //       console.error("Error getting session:", error);
-  //     } else {
-  //       console.log("Initial session loaded:", session ? "Session exists" : "No session");
-  //     }
-  //     setSession(session);
-
-  //     // Data is automatically loaded from localStorage via Zustand persist middleware
-  //   } catch (err) {
-  //     console.error("Exception getting session:", err);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // getInitialSession();
-
-  // const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-  //   console.log("Auth state changed:", event, session ? "session exists" : "no session");
-  //   setSession(session);
-  //   setLoading(false);
-
-  //   // Data persists in localStorage regardless of auth state
-  //   // No need to load/clear data on auth changes
-  // });
-
-  // return () => subscription.unsubscribe();
-  // }, []);
-
-  // if (loading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="text-center">
-  //         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-  //         <p className="text-muted-foreground">Loading...</p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
-  // if (!session) return <LoginPage />;
+  if (!isAuthenticated) return <LoginPage />;
   return <>{children}</>;
 }
 
