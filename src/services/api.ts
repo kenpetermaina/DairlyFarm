@@ -16,7 +16,7 @@ export interface ApiError {
 
 // Create axios instance with default config
 const apiClient: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_APP_API_URL || 'http://localhost:8000/api',
+  baseURL: import.meta.env.VITE_APP_API_URL || 'https://dowin-backend.simonsoftware.xyz/api',
 //   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
