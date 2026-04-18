@@ -6,8 +6,8 @@ import React, {
   useEffect,
   ReactNode,
 } from 'react';
-import { api } from '../services/api';
-import { AuthContextType, AuthState, User, LoginCredentials, RegisterData } from '../types/auth.types';
+import { supabase } from '@/integrations/supabase/client';
+import { AuthContextType, AuthResponse, AuthState, User, LoginCredentials, RegisterData } from '../types/auth.types';
 
 // Create the context with undefined initial value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,18 +30,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuthStatus();
   }, []);
 
+  const mapSupabaseUser = (supabaseUser: any): User => ({
+    id: supabaseUser.id,
+    email: supabaseUser.email || '',
+    name: supabaseUser.user_metadata?.name || '',
+    role: (supabaseUser.user_metadata?.role as 'user' | 'admin') || 'user',
+    avatar: supabaseUser.user_metadata?.avatar || undefined,
+  });
+
   const checkAuthStatus = async (): Promise<void> => {
     try {
-      const token = api.getAuthToken();
-      
-      if (!token) {
+      const { data, error } = await supabase.auth.getSession();
+
+      if (error || !data.session) {
         setState(prev => ({ ...prev, isLoading: false }));
         return;
       }
 
-      // Verify token and get user data
-      const user = await fetchUserData();
-      
+      const user = mapSupabaseUser(data.session.user);
       setState({
         user,
         isLoading: false,
@@ -49,7 +55,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         error: null,
       });
     } catch (error) {
-      api.clearAuthTokens();
       setState({
         user: null,
         isLoading: false,
@@ -60,36 +65,41 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const fetchUserData = async (): Promise<User> => {
-    try {
-      const response = await api.get<{ user: User }>('/user');
-      return response.user;
-    } catch (error) {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) {
       throw new Error('Failed to fetch user data');
     }
+    return mapSupabaseUser(data.user);
   };
 
-  const login = async (credentials: LoginCredentials): Promise<void> => {
+  const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
 
-    //   const response = await api.post<{ user: User; token: string; refreshToken?: string }>(
-      const response = await api.post(
-        '/v1/auth/login',
-        credentials
-      );
-      console.log("Res: ", response);
-      
-      // Store tokens
-      api.setAuthToken(response.auth_token, credentials.rememberMe || false);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: credentials.email,
+        password: credentials.password,
+      });
 
-      localStorage.setItem("authToken", response.auth_token)
+      if (error || !data.session || !data.user) {
+        const message = error?.message || 'Unable to sign in. Please check your credentials.';
+        throw new Error(message);
+      }
+
+      const user = mapSupabaseUser(data.user);
+
       setState({
-        user: response.user,
+        user,
         isLoading: false,
         isAuthenticated: true,
         error: null,
       });
-      return response;
+
+      return {
+        status: 'success',
+        message: 'Login successful',
+        user,
+      };
     } catch (error: any) {
       setState(prev => ({
         ...prev,
@@ -97,34 +107,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isAuthenticated: false,
         error: error.message || 'An error occurred during login',
       }));
-      throw error;
+      return {
+        status: 'error',
+        message: error.message || 'An error occurred during login',
+      };
     }
   };
 
-  const register = async (data: RegisterData): Promise<void> => {
+  const register = async (data: RegisterData): Promise<AuthResponse> => {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
 
-    //   const response = await api.post<{ user: User; token: string; refreshToken?: string }>(
-      const response = await api.post(
-        '/v1/auth/register',
-        data
-      );
-      console.log("Response: ", response);
-      // Store tokens (register typically persists by default)
-      api.setAuthToken(response.token, true);
-      
-      if (response.refreshToken) {
-        localStorage.setItem('refreshToken', response.refreshToken);
+      const { data: signUpData, error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            name: data.name,
+          },
+        },
+      });
+
+      if (error) {
+        throw new Error(error.message);
       }
 
+      const user = signUpData.user ? mapSupabaseUser(signUpData.user) : null;
+
       setState({
-        user: response.user,
+        user,
         isLoading: false,
-        isAuthenticated: true,
+        isAuthenticated: Boolean(signUpData.user),
         error: null,
       });
-      return response;
+
+      return {
+        status: 'success',
+        message: 'Registration successful. Check your email to confirm your account.',
+        user,
+      };
     } catch (error: any) {
       setState(prev => ({
         ...prev,
@@ -132,26 +153,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isAuthenticated: false,
         error: error.message || 'An error occurred during registration',
       }));
-      throw error;
+      return {
+        status: 'error',
+        message: error.message || 'An error occurred during registration',
+      };
     }
   };
 
   const logout = async (): Promise<void> => {
     try {
       setState(prev => ({ ...prev, isLoading: true }));
-
-      const token = api.getAuthToken();
-      
-      if (token) {
-        // Call logout endpoint
-        await api.post('/auth/logout');
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Logout error:', error.message);
       }
     } catch (error: any) {
       console.error('Logout error:', error);
     } finally {
-      // Clear tokens regardless of API call success
-      api.clearAuthTokens();
-      
       setState({
         user: null,
         isLoading: false,
@@ -165,11 +183,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
 
-      const response = await api.patch<{ user: User }>('/auth/profile', userData);
+      const updateData: any = {};
+      if (userData.name !== undefined) updateData.name = userData.name;
+      if (userData.role !== undefined) updateData.role = userData.role;
+      if (userData.avatar !== undefined) updateData.avatar = userData.avatar;
+
+      const { data, error } = await supabase.auth.updateUser({
+        data: updateData,
+      });
+
+      if (error || !data.user) {
+        throw new Error(error?.message || 'Failed to update user');
+      }
 
       setState(prev => ({
         ...prev,
-        user: response.user,
+        user: mapSupabaseUser(data.user),
         isLoading: false,
         error: null,
       }));

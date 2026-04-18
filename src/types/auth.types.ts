@@ -1,4 +1,4 @@
-// types/auth.types.ts
+
 export interface User {
   id: string;
   email: string;
@@ -19,6 +19,12 @@ export interface RegisterData {
   name: string;
 }
 
+export interface AuthResponse {
+  status: 'success' | 'error';
+  message: string;
+  user?: User | null;
+}
+
 export interface AuthState {
   user: User | null;
   isLoading: boolean;
@@ -27,8 +33,8 @@ export interface AuthState {
 }
 
 export interface AuthContextType extends AuthState {
-  login: (credentials: LoginCredentials) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<AuthResponse>;
+  register: (data: RegisterData) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   updateUser: (userData: Partial<User>) => Promise<void>;
   clearError: () => void;
