@@ -99,6 +99,8 @@ export interface Expense {
 export interface IncomeRecord {
   id: string;
   date: string;
+  createdAt?: string;
+  receiptId?: string;
   litres: number;
   pricePerLitre: number;
   total: number;

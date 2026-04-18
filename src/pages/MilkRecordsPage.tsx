@@ -2,14 +2,16 @@ import { useFarmStore } from "@/store/farmStore";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Sunrise, Sun, Sunset, Download } from "lucide-react";
+import { Trash2, Sunrise, Sun, Sunset, Download, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import PageHeader from "@/components/PageHeader";
 import PrintButton from "@/components/PrintButton";
 import { downloadCSV } from "@/lib/downloadUtils";
 
 export default function MilkRecordsPage() {
   const { milkRecords, deleteMilkRecord, cows } = useFarmStore();
+  const navigate = useNavigate();
   const getCowName = (id: string) => { const c = cows.find((c) => c.id === id); return c ? `${c.tag_number} - ${c.name}` : id; };
 
   const handleDownloadMilkRecords = () => {
@@ -61,7 +63,15 @@ export default function MilkRecordsPage() {
                 <TableCell>{r.date}</TableCell>
                 <TableCell>{getCowName(r.cowId)}</TableCell>
                 <TableCell>{r.amount_liters}</TableCell>
-                <TableCell className="no-print">
+                <TableCell className="no-print flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => navigate(`/income?prefillQty=${encodeURIComponent(String(r.amount_liters ?? r.amount ?? 0))}`)}
+                    title="Sell this milk"
+                  >
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"
