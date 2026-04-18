@@ -116,6 +116,38 @@ export interface Worker {
   status: 'Active' | 'Inactive';
 }
 
+export interface Message {
+  id: string;
+  sender_id: string;
+  sender_name: string;
+  sender_type: 'farmer' | 'worker';
+  recipient_id: string;
+  recipient_name: string;
+  content: string;
+  created_at: string;
+  read: boolean;
+}
+
+export interface DailyUpdate {
+  id: string;
+  worker_id: string;
+  worker_name: string;
+  title: string;
+  description: string;
+  images?: string[];
+  created_at: string;
+}
+
+export interface Notification {
+  id: string;
+  type: 'milk_collection' | 'health_alert' | 'feeding_schedule' | 'breeding' | 'general';
+  title: string;
+  message: string;
+  created_at: string;
+  read: boolean;
+  metadata?: Record<string, any>;
+}
+
 interface FarmStore {
   // Data
   cows: Cow[];
@@ -128,6 +160,9 @@ interface FarmStore {
   expenses: Expense[];
   incomeRecords: IncomeRecord[];
   workers: Worker[];
+  messages: Message[];
+  dailyUpdates: DailyUpdate[];
+  notifications: Notification[];
 
   // Loading states
   loading: boolean;
@@ -157,6 +192,14 @@ interface FarmStore {
   addWorker: (w: Worker) => void;
   updateWorker: (w: Worker) => void;
   deleteWorker: (id: string) => void;
+  addMessage: (m: Omit<Message, 'id' | 'created_at'>) => void;
+  markMessageRead: (id: string) => void;
+  deleteMessage: (id: string) => void;
+  addDailyUpdate: (u: Omit<DailyUpdate, 'id' | 'created_at'>) => void;
+  deleteDailyUpdate: (id: string) => void;
+  addNotification: (n: Omit<Notification, 'id' | 'created_at'>) => void;
+  markNotificationRead: (id: string) => void;
+  deleteNotification: (id: string) => void;
   clearError: () => void;
 
   // Data management
@@ -180,6 +223,9 @@ export const useFarmStore = create<FarmStore>()(
       expenses: [],
       incomeRecords: [],
       workers: [],
+      messages: [],
+      dailyUpdates: [],
+      notifications: [],
       loading: false,
       error: null,
 
@@ -367,6 +413,73 @@ export const useFarmStore = create<FarmStore>()(
         }));
       },
 
+      // Message operations
+      addMessage: (messageData) => {
+        const now = new Date().toISOString();
+        const newMessage: Message = {
+          ...messageData,
+          id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          created_at: now,
+        };
+        set((state) => ({ messages: [...state.messages, newMessage] }));
+      },
+
+      markMessageRead: (id) => {
+        set((state) => ({
+          messages: state.messages.map((msg) =>
+            msg.id === id ? { ...msg, read: true } : msg
+          ),
+        }));
+      },
+
+      deleteMessage: (id) => {
+        set((state) => ({
+          messages: state.messages.filter((msg) => msg.id !== id),
+        }));
+      },
+
+      // Daily update operations
+      addDailyUpdate: (updateData) => {
+        const now = new Date().toISOString();
+        const newUpdate: DailyUpdate = {
+          ...updateData,
+          id: `update_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          created_at: now,
+        };
+        set((state) => ({ dailyUpdates: [...state.dailyUpdates, newUpdate] }));
+      },
+
+      deleteDailyUpdate: (id) => {
+        set((state) => ({
+          dailyUpdates: state.dailyUpdates.filter((update) => update.id !== id),
+        }));
+      },
+
+      // Notification operations
+      addNotification: (notificationData) => {
+        const now = new Date().toISOString();
+        const newNotification: Notification = {
+          ...notificationData,
+          id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          created_at: now,
+        };
+        set((state) => ({ notifications: [...state.notifications, newNotification] }));
+      },
+
+      markNotificationRead: (id) => {
+        set((state) => ({
+          notifications: state.notifications.map((notif) =>
+            notif.id === id ? { ...notif, read: true } : notif
+          ),
+        }));
+      },
+
+      deleteNotification: (id) => {
+        set((state) => ({
+          notifications: state.notifications.filter((notif) => notif.id !== id),
+        }));
+      },
+
       clearError: () => {
         set({ error: null });
       },
@@ -385,6 +498,9 @@ export const useFarmStore = create<FarmStore>()(
           expenses: state.expenses,
           incomeRecords: state.incomeRecords,
           workers: state.workers,
+          messages: state.messages,
+          dailyUpdates: state.dailyUpdates,
+          notifications: state.notifications,
           exportedAt: new Date().toISOString(),
           version: '1.0'
         };
@@ -425,6 +541,9 @@ export const useFarmStore = create<FarmStore>()(
             expenses: importedData.expenses || [],
             incomeRecords: importedData.incomeRecords || [],
             workers: importedData.workers || [],
+            messages: importedData.messages || [],
+            dailyUpdates: importedData.dailyUpdates || [],
+            notifications: importedData.notifications || [],
           });
 
           return true;
@@ -447,6 +566,9 @@ export const useFarmStore = create<FarmStore>()(
           expenses: [],
           incomeRecords: [],
           workers: [],
+          messages: [],
+          dailyUpdates: [],
+          notifications: [],
           error: null,
         });
       },
@@ -465,6 +587,9 @@ export const useFarmStore = create<FarmStore>()(
         expenses: state.expenses,
         incomeRecords: state.incomeRecords,
         workers: state.workers,
+        messages: state.messages,
+        dailyUpdates: state.dailyUpdates,
+        notifications: state.notifications,
       }),
       onRehydrateStorage: () => (state) => {
         console.log('Data rehydrated from localStorage:', state);

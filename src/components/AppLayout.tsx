@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { LayoutDashboard, Beef, Milk, Wheat, HeartPulse, StickyNote, Baby, Bell, BarChart3, Wallet, DollarSign, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, Beef, Milk, Wheat, HeartPulse, StickyNote, Baby, Bell, BarChart3, Wallet, DollarSign, Users, LogOut, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ const links = [
   { to: "/expenses", icon: Wallet, label: "Expenses" },
   { to: "/income", icon: DollarSign, label: "Income" },
   { to: "/workers", icon: Users, label: "Farm Workers" },
+  { to: "/communication", icon: MessageCircle, label: "Communication" },
 ];
 
 export default function AppLayout() {

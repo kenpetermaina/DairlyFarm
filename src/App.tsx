@@ -20,6 +20,7 @@ import ReportsPage from "@/pages/ReportsPage";
 import ExpensesPage from "@/pages/ExpensesPage";
 import IncomePage from "@/pages/IncomePage";
 import WorkersPage from "@/pages/WorkersPage";
+import CommunicationPage from "@/pages/CommunicationPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import NotFound from "@/pages/NotFound";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
@@ -60,6 +61,7 @@ const App = () => (
                   <Route path="/expenses" element={<ExpensesPage />} />
                   <Route path="/income" element={<IncomePage />} />
                   <Route path="/workers" element={<WorkersPage />} />
+                  <Route path="/communication" element={<CommunicationPage />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
